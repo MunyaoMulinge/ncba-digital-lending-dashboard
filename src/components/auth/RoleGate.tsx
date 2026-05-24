@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Role, ROLES } from '@/lib/roles';
 import { Lock } from 'lucide-react';
@@ -14,11 +15,18 @@ interface RoleGateProps {
 
 export default function RoleGate({ allowedRoles, children, fallback }: RoleGateProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted && !user) {
+      router.replace('/login');
+    }
+  }, [mounted, user, router]);
 
   if (!mounted) {
     return (
@@ -33,10 +41,11 @@ export default function RoleGate({ allowedRoles, children, fallback }: RoleGateP
 
   if (!user) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <Lock className="h-16 w-16 text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-semibold">Authentication Required</h2>
-        <p className="text-muted-foreground mt-2">Please log in to access this page.</p>
+      <div className="flex h-screen items-center justify-center">
+        <div className="space-y-4 w-64">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
       </div>
     );
   }
